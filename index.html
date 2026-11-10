@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RakObat Stok Apotek</title>
+<meta name="description" content="RakObat mencatat obat masuk dan keluar per nomor batch, jadi sisa stok dan tanggal ED tiap obat di apotek bisa dilihat kapan saja.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: lembar putih bersudut bulat di atas latar toska pucat. Panel hijau limau dengan kata raksasa, lalu petak pastel, kartu harga abu kebiruan, dan panel toska. Satu tampilan terang, mengikuti referensi. */
+:root {
+  color-scheme: light;
+  --outer: #d9f1f0;
+  --page: #ffffff;
+  --lime: #a5e06c;
+  --forest: #0f2b12;     /* teks raksasa dan tombol */
+  --navy: #1c2260;       /* judul bagian */
+  --ink: #1a1f36;
+  --muted: #56607a;
+  --soft: #f1f4f9;       /* kartu harga dan bilah menu */
+  --line: #dfe5ee;
+  --aqua: #a9e3e0;
+  --yellow: #ffe069;
+  --peach: #ffc49a;
+  --pink: #ffd3e6;
+  --blue: #b4cdff;
+  --ed: #b3261e;         /* hanya untuk tanda ED dekat */
+  --display: "Plus Jakarta Sans", "Arial Black", Arial, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --r-panel: 26px;
+  --r-card: 18px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+img { max-width: 100%; }
+body { background: var(--outer); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.55; }
+a, button, summary { cursor: pointer; }
+a { color: var(--navy); text-underline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--navy); outline-offset: 3px; border-radius: 6px; }
+p, h1, h2, h3 { margin: 0; }
+h2 { font-family: var(--display); font-weight: 800; color: var(--navy); font-size: clamp(1.7rem, 4vw, 2.5rem); line-height: 1.05; letter-spacing: -0.02em; text-wrap: balance; max-width: 16ch; }
+.muted { color: var(--muted); }
+
+.outer { padding-block: clamp(12px, 3vw, 36px); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.page { background: var(--page); max-width: 72rem; margin-inline: auto; border-radius: var(--r-panel); padding: clamp(10px, 1.6vw, 18px); display: grid; gap: clamp(40px, 6vw, 72px); }
+.inset { padding-inline: clamp(6px, 3vw, 36px); display: grid; gap: 24px; }
+
+/* Bilah menu */
+.top { background: var(--soft); border-radius: 16px; padding: 8px 10px 8px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px; }
+.brand { font-family: var(--display); font-weight: 800; font-size: 1.3rem; color: var(--forest); margin-right: auto; }
+.top nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px; }
+.top nav a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink); text-decoration: none; font-weight: 500; font-size: .92rem; }
+.top nav a:hover { text-decoration: underline; }
+.top nav a:active { opacity: .7; }
+.pill { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 24px; border-radius: 999px; background: var(--forest); color: #ffffff; font-weight: 600; font-size: .95rem; text-decoration: none; border: 2px solid var(--forest); transition: background .15s, color .15s; }
+.pill:hover { background: transparent; color: var(--forest); }
+.pill:active { transform: translateY(1px); }
+.top nav a.pill { color: #ffffff; padding: 0 20px; }
+.top nav a.pill:hover { color: var(--forest); text-decoration: none; }
+header.stack { display: grid; gap: 10px; }
+
+/* Panel pembuka */
+.hero { --hp: clamp(16px, 3.4vw, 40px); --hg: clamp(18px, 3vw, 30px); --fs: clamp(2.8rem, 14vw, 11.5rem); background: var(--lime); border-radius: var(--r-panel) var(--r-panel) 0 0; padding: clamp(18px, 3.4vw, 40px) var(--hp) 0; display: grid; gap: var(--hg); color: var(--forest); overflow: hidden; }
+/* Dua kata didorong ke kiri dan kanan, wajah orangnya mengisi sela di tengah */
+.hero h1 { font-family: var(--display); font-weight: 800; font-size: var(--fs); line-height: .86; letter-spacing: -0.045em; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 .22em; }
+.hero-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 20rem) minmax(0, 1fr); gap: 24px; align-items: end; }
+.hero-row .hero-copy, .hero-row .demo { margin-bottom: 28px; }
+.hero-row .demo { justify-self: end; width: 100%; max-width: 19rem; }
+/* Orangnya berdiri di tengah, kepala menimpa kata raksasa, badan terpotong kartu stok */
+.hero-foto { margin: calc(-0.86 * var(--fs) - var(--hg) + 0.5rem) 0 calc(-1 * var(--hg)); position: relative; z-index: 1; }
+.hero-foto img { display: block; width: 100%; height: auto; aspect-ratio: 760 / 1203; }
+.hero-copy { display: grid; gap: 18px; max-width: 30rem; }
+.hero-copy .lead { font-weight: 500; font-size: 1.08rem; line-height: 1.5; }
+.janji { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 24px; font-size: .88rem; font-weight: 600; line-height: 1.3; }
+.janji li { display: flex; align-items: center; gap: 10px; }
+.janji li::before { content: ""; width: 14px; height: 14px; border-radius: 50%; background: var(--forest); flex: none; }
+.demo { background: var(--page); border-radius: var(--r-card); padding: 12px; display: grid; gap: 12px; }
+.demo-box { border: 2px dashed var(--forest); border-radius: 12px; padding: 16px; display: grid; gap: 4px; }
+.demo-box strong { font-size: 1.15rem; line-height: 1.2; }
+.demo-box span { font-size: .86rem; color: var(--muted); }
+
+/* Kartu stok menempel di dasar panel hijau */
+.kartu { background: var(--page); color: var(--ink); border-radius: var(--r-panel) var(--r-panel) 0 0; margin-inline: calc(-1 * var(--hp)); padding: clamp(18px, 2.6vw, 28px) var(--hp) 6px; display: grid; gap: 10px; position: relative; z-index: 2; }
+.kartu-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 20px; align-items: baseline; }
+.kartu-head strong { font-family: var(--display); font-weight: 800; color: var(--navy); font-size: 1.15rem; }
+.kartu-head span { font-size: .82rem; color: var(--muted); }
+.scroll { overflow-x: auto; border-radius: 12px; background: var(--soft); }
+table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: .88rem; font-variant-numeric: tabular-nums; }
+th, td { padding: 10px 14px; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--line); }
+th { font-size: .76rem; font-weight: 600; color: var(--muted); }
+td.n, th.n { text-align: right; }
+tr:last-child td { border-bottom: 0; }
+.fefo td { color: var(--ed); font-weight: 600; }
+.kartu-foot { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.sisa { font-family: var(--display); font-weight: 800; font-size: 1.4rem; color: var(--navy); }
+.tag { background: var(--yellow); color: var(--ink); font-weight: 600; font-size: .82rem; padding: 5px 12px; border-radius: 6px; }
+.contoh { font-size: .8rem; color: var(--muted); }
+
+/* Petak fitur pastel */
+/* Susunan bento: satu petak besar 2x2, dua petak di kanannya, lalu baris tiga petak dan baris ajakan demo */
+.bento { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: minmax(15rem, auto); gap: 14px; }
+.bento > li { border-radius: 24px; padding: clamp(20px, 2.6vw, 30px); display: flex; flex-direction: column; justify-content: space-between; gap: 20px; min-width: 0; }
+.bento h3 { font-family: var(--display); font-weight: 800; font-size: 1.4rem; line-height: 1.12; color: var(--forest); }
+.bento p { font-size: .95rem; line-height: 1.5; color: var(--ink); }
+.bento .teks { display: grid; gap: 8px; }
+.ikon { width: 3.25rem; height: 3.25rem; border-radius: 16px; background: var(--forest); color: #ffffff; display: grid; place-items: center; flex: none; }
+.ikon svg, .cek svg, .pill svg, .panah svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.bento > .b-hero { grid-column: span 2; grid-row: span 2; background: var(--lime); position: relative; overflow: hidden; justify-content: flex-end; }
+.b-hero img { position: absolute; top: 16px; right: 16px; width: 42%; height: calc(100% - 32px); object-fit: cover; border-radius: 18px; transition: transform .6s; }
+.b-hero:hover img { transform: scale(1.03); }
+.b-hero .teks { max-width: 52%; gap: 14px; }
+.b-hero h3 { font-size: clamp(1.7rem, 3.6vw, 2.8rem); line-height: 1.02; letter-spacing: -0.02em; }
+.b-hero p { font-size: 1.05rem; }
+.chip { display: inline-flex; align-items: center; gap: 8px; justify-self: start; align-self: flex-start; background: var(--page); color: var(--forest); border-radius: 999px; padding: 6px 14px; font-size: .85rem; font-weight: 600; }
+.chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--forest); }
+.b-garis { border: 1px solid var(--line); }
+.b-stat .angka { font-family: var(--display); font-weight: 800; font-size: clamp(2.6rem, 5vw, 3.6rem); line-height: 1; letter-spacing: -0.03em; color: var(--forest); }
+.b-cta { grid-column: span 2; background: var(--forest); position: relative; }
+.b-cta h3 { color: #ffffff; font-size: clamp(1.5rem, 3vw, 2.2rem); max-width: 18ch; }
+.b-cta h3 a { color: inherit; text-decoration: none; }
+.b-cta h3 a::after { content: ""; position: absolute; inset: 0; border-radius: 24px; }
+.b-cta .atas { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.b-cta .chip { background: var(--lime); }
+.panah { width: 3rem; height: 3rem; border-radius: 50%; background: var(--lime); color: var(--forest); display: grid; place-items: center; flex: none; transition: transform .2s; }
+.b-cta:hover .panah { transform: rotate(45deg); }
+.b-cta:active { opacity: .92; }
+.c-aqua { background: var(--aqua); } .c-yellow { background: var(--yellow); } .c-peach { background: var(--peach); }
+.c-pink { background: var(--pink); } .c-blue { background: var(--blue); } .c-soft { background: var(--soft); }
+
+/* Harga */
+.harga-head { display: grid; gap: 10px; justify-items: center; text-align: center; }
+.harga-head h2 { max-width: 20ch; }
+.harga-head p { max-width: 30rem; }
+.paket { list-style: none; margin: 12px auto 0; padding: 0; width: 100%; max-width: 56rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.paket > li { position: relative; display: flex; flex-direction: column; gap: 24px; background: var(--page); border: 2px solid var(--line); border-radius: 24px; padding: clamp(20px, 3vw, 30px); min-width: 0; }
+.paket > .unggul { border-color: var(--forest); }
+.lencana { position: absolute; top: -15px; left: 24px; background: var(--lime); color: var(--forest); font-weight: 700; font-size: .85rem; padding: 3px 14px; border-radius: 999px; }
+.paket .judul { display: grid; gap: 6px; }
+.paket h3 { font-family: var(--display); font-weight: 800; font-size: 1.3rem; line-height: 1.15; color: var(--navy); }
+.paket .judul p { font-size: .95rem; color: var(--muted); }
+.rp { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; border-block: 1px solid var(--line); padding-block: 18px; }
+.rp b { font-family: var(--display); font-weight: 800; font-size: clamp(2rem, 4.4vw, 2.6rem); line-height: 1; letter-spacing: -0.02em; color: var(--navy); }
+.rp span { font-size: .92rem; color: var(--muted); }
+.cek { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: .97rem; }
+.cek li { display: flex; align-items: flex-start; gap: 10px; }
+.cek svg { width: 18px; height: 18px; stroke-width: 2.6; color: var(--forest); flex: none; margin-top: 4px; }
+.paket .pill { margin-top: auto; width: 100%; gap: 8px; }
+.pill svg { width: 18px; height: 18px; }
+.pill.garis { background: transparent; color: var(--forest); }
+.pill.garis:hover { background: var(--forest); color: #ffffff; }
+.tambahan { width: 100%; max-width: 56rem; margin-inline: auto; background: var(--soft); border-radius: var(--r-card); padding: 18px clamp(18px, 3vw, 30px); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 24px; }
+.tambahan div { display: grid; gap: 2px; min-width: 0; }
+.tambahan div span { font-size: .92rem; color: var(--muted); }
+.tambahan .rp { border: 0; padding: 0; }
+.tambahan .rp b { font-size: 1.5rem; }
+.catatan { font-size: .9rem; text-align: center; max-width: 34rem; margin-inline: auto; }
+
+/* Cara mulai: panel toska */
+.mulai { background: var(--aqua); border-radius: var(--r-panel); padding: clamp(22px, 4vw, 48px); display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 28px clamp(24px, 5vw, 64px); align-items: start; }
+.mulai-kiri { display: grid; gap: 18px; justify-items: start; }
+.mulai-kiri p { max-width: 26rem; }
+.langkah { list-style: none; margin: 0; padding: 0; counter-reset: l; display: grid; }
+.langkah li { counter-increment: l; display: grid; grid-template-columns: 2.4rem minmax(0, 1fr); gap: 0 14px; padding-block: 16px; border-top: 1px solid rgba(15, 43, 18, .28); }
+.langkah li:first-child { border-top: 0; padding-top: 0; }
+.langkah li::before { content: counter(l); width: 2.4rem; height: 2.4rem; border-radius: 50%; background: var(--forest); color: #ffffff; font-weight: 700; display: grid; place-items: center; }
+.langkah b { display: block; font-weight: 700; }
+.langkah span { font-size: .92rem; }
+
+.belum { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.belum li { border: 1px solid var(--line); border-radius: var(--r-card); padding: 18px; font-size: .9rem; color: var(--muted); }
+.belum b { display: block; color: var(--ink); font-size: 1rem; }
+
+/* Kontak */
+.kontak { background: var(--lime); color: var(--forest); border-radius: var(--r-panel); padding: clamp(22px, 4vw, 48px); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 22rem); gap: 24px 48px; align-items: center; }
+.kontak h2 { color: var(--forest); font-size: clamp(2rem, 6vw, 3.6rem); max-width: 12ch; }
+.kontak-kiri { display: grid; gap: 16px; }
+.kontak-kiri p { max-width: 30rem; }
+.kontak a { color: var(--forest); font-weight: 600; }
+.wa { background: var(--page); border-radius: var(--r-card); padding: 12px; }
+.wa div { border: 2px dashed var(--ed); border-radius: 12px; padding: 16px; display: grid; gap: 4px; }
+.wa span { font-size: .84rem; color: var(--muted); }
+.wa strong { color: var(--ed); font-size: 1.1rem; user-select: all; }
+footer { font-size: .85rem; color: var(--muted); padding: 0 clamp(6px, 3vw, 36px) 14px; }
+
+@media (max-width: 900px) {
+  .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; }
+  .bento > li { min-height: 13rem; }
+  .bento > .b-hero { grid-row: auto; min-height: 21rem; }
+  .mulai, .kontak { grid-template-columns: minmax(0, 1fr); }
+  .hero-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .hero-copy { grid-column: span 2; }
+  .hero-row .hero-copy { margin-bottom: 0; }
+  .hero-foto { margin-top: 0; max-width: 18rem; }
+  .hero h1 { justify-content: flex-start; }
+}
+@media (max-width: 640px) {
+  .hero-row { grid-template-columns: minmax(0, 1fr); }
+  .hero-copy { grid-column: auto; }
+  .hero-row .demo { justify-self: stretch; max-width: none; margin-bottom: 0; }
+  .hero-foto { order: 3; justify-self: center; max-width: 15rem; }
+  .belum, .paket { grid-template-columns: minmax(0, 1fr); }
+  .paket { gap: 26px; }
+}
+@media (max-width: 560px) {
+  .bento { grid-template-columns: minmax(0, 1fr); }
+  .bento > li { min-height: 0; }
+  .bento > .b-hero, .b-cta { grid-column: auto; min-height: 0; }
+  .b-hero img { position: static; width: 100%; height: auto; aspect-ratio: 16 / 10; }
+  .b-hero .teks { max-width: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="outer">
+<div class="page">
+
+  <header class="stack">
+    <div class="top">
+      <div class="brand">RakObat</div>
+      <nav aria-label="Bagian halaman">
+        <a href="#fitur">Yang dikerjakan</a>
+        <a href="#harga">Harga</a>
+        <a href="#mulai">Cara mulai</a>
+        <a class="pill" href="#kontak">Minta demo</a>
+      </nav>
+    </div>
+
+    <div class="hero">
+      <h1><span>Stok</span> <span>obat</span></h1>
+      <div class="hero-row">
+        <div class="hero-copy">
+          <p class="lead">Obat yang hampir kedaluwarsa ketahuan sebelum jadi kerugian. RakObat mencatat obat masuk dari PBF dan obat keluar per nomor batch, jadi sisa stok dan tanggal ED tiap obat bisa dilihat kapan saja.</p>
+          <ul class="janji">
+            <li>Bulan pertama gratis</li>
+            <li>Tanpa kontrak tahunan</li>
+          </ul>
+        </div>
+        <figure class="hero-foto">
+          <img src="img/apoteker.webp" width="760" height="1203" fetchpriority="high" alt="Perempuan berjas putih tersenyum sambil memegang map">
+        </figure>
+        <div class="demo">
+          <div class="demo-box">
+            <strong>Demo 30 menit di apotek Anda</strong>
+            <span>Coba sendiri dengan beberapa obat dari rak.</span>
+          </div>
+          <a class="pill" href="#kontak">Atur jadwal demo</a>
+        </div>
+      </div>
+
+      <div class="kartu" role="group" aria-label="Contoh kartu stok">
+        <div class="kartu-head">
+          <strong>Kartu stok: Amoxicillin 500 mg kaplet</strong>
+          <span>Satuan strip, stok minimum 30</span>
+        </div>
+        <div class="scroll" tabindex="0" aria-label="Tabel kartu stok, geser ke samping di layar kecil">
+          <table>
+            <thead>
+              <tr><th scope="col">Tanggal</th><th scope="col">Dokumen</th><th scope="col">No. batch</th><th scope="col">ED</th><th scope="col" class="n">Masuk</th><th scope="col" class="n">Keluar</th><th scope="col" class="n">Sisa</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>03/11/2026</td><td>Faktur FK-2291</td><td>B2407A</td><td>02/2027</td><td class="n">50</td><td class="n">0</td><td class="n">50</td></tr>
+              <tr><td>05/11/2026</td><td>Keluar</td><td>B2407A</td><td>02/2027</td><td class="n">0</td><td class="n">12</td><td class="n">38</td></tr>
+              <tr><td>08/11/2026</td><td>Faktur FK-2317</td><td>B2511C</td><td>11/2028</td><td class="n">100</td><td class="n">0</td><td class="n">138</td></tr>
+              <tr class="fefo"><td>10/11/2026</td><td>Keluar (FEFO)</td><td>B2407A</td><td>02/2027</td><td class="n">0</td><td class="n">9</td><td class="n">129</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="kartu-foot">
+          <span class="sisa">Sisa 129 strip</span>
+          <span class="tag">Batch B2407A, 29 strip, ED 3 bulan lagi</span>
+          <span class="contoh">Contoh tampilan dengan data karangan, bukan data apotek sungguhan.</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main style="display: grid; gap: clamp(40px, 6vw, 72px);">
+    <section id="fitur" class="inset">
+      <h2>Yang dikerjakan sistem ini</h2>
+      <svg width="0" height="0" style="position: absolute;" aria-hidden="true">
+        <symbol id="i-masuk" viewBox="0 0 24 24"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></symbol>
+        <symbol id="i-turun" viewBox="0 0 24 24"><path d="m22 17-8.5-8.5-5 5L2 7"/><path d="M16 17h6v-6"/></symbol>
+        <symbol id="i-opname" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></symbol>
+        <symbol id="i-laporan" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M8 17v-5"/><path d="M13 17V8"/><path d="M18 17v-7"/></symbol>
+        <symbol id="i-akun" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+        <symbol id="i-cek" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+        <symbol id="i-kanan" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+        <symbol id="i-serong" viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></symbol>
+      </svg>
+      <ul class="bento">
+        <li class="b-hero">
+          <img src="img/blister.jpg" width="560" height="630" loading="lazy" alt="Tangan bersarung memegang beberapa strip obat">
+          <div class="teks">
+            <span class="chip">First Expired, First Out</span>
+            <h3>Batch ED terdekat keluar lebih dulu</h3>
+            <p>Setiap obat keluar, sistem mengambil dari batch yang paling cepat kedaluwarsa (FEFO). Stok lama tidak tertinggal di rak.</p>
+          </div>
+        </li>
+        <li class="c-aqua"><span class="ikon"><svg aria-hidden="true"><use href="#i-masuk"/></svg></span><div class="teks"><h3>Barang masuk</h3><p>Catat faktur dari PBF: nama obat, nomor batch, tanggal ED, jumlah, dan harga beli.</p></div></li>
+        <li class="b-garis"><span class="ikon"><svg aria-hidden="true"><use href="#i-turun"/></svg></span><div class="teks"><h3>Stok minimum</h3><p>Tentukan batas tiap obat. Yang di bawah batas masuk daftar pesan ulang.</p></div></li>
+        <li class="c-yellow b-stat"><span class="angka">3 bulan</span><div class="teks"><h3>Peringatan ED</h3><p>Obat yang ED-nya tinggal 3 bulan muncul di halaman depan. Batasnya bisa Anda atur.</p></div></li>
+        <li class="c-peach"><span class="ikon"><svg aria-hidden="true"><use href="#i-opname"/></svg></span><div class="teks"><h3>Stock opname</h3><p>Cetak lembar hitung, masukkan hasil hitung fisik, selisihnya tercatat beserta penginputnya.</p></div></li>
+        <li class="c-blue"><span class="ikon"><svg aria-hidden="true"><use href="#i-laporan"/></svg></span><div class="teks"><h3>Laporan</h3><p>Kartu stok per obat, nilai persediaan, obat masuk dan keluar per periode. Bisa diunduh ke Excel.</p></div></li>
+        <li class="c-soft"><span class="ikon"><svg aria-hidden="true"><use href="#i-akun"/></svg></span><div class="teks"><h3>Akun per orang</h3><p>Pemilik, apoteker, dan asisten punya akun sendiri. Setiap perubahan stok tercatat atas nama akunnya.</p></div></li>
+        <li class="b-cta">
+          <div class="atas"><span class="chip">Demo 30 menit</span><span class="panah"><svg aria-hidden="true"><use href="#i-serong"/></svg></span></div>
+          <h3><a href="#kontak">Coba dengan obat dari rak Anda sendiri</a></h3>
+        </li>
+      </ul>
+    </section>
+
+    <section id="harga" class="inset">
+      <div class="harga-head">
+        <h2>Harga pasang dan langganan</h2>
+        <p class="muted">Bayar pasang satu kali, lalu langganan bulanan. Tidak ada kontrak tahunan.</p>
+      </div>
+      <ul class="paket">
+        <li>
+          <div class="judul"><h3>Pasang dan data awal</h3><p>Dibayar satu kali, saat sistem dipasang di apotek Anda.</p></div>
+          <p class="rp"><b>Rp1.500.000</b><span>sekali bayar</span></p>
+          <ul class="cek">
+            <li><svg aria-hidden="true"><use href="#i-cek"/></svg>Input daftar obat dari Excel atau catatan Anda</li>
+            <li><svg aria-hidden="true"><use href="#i-cek"/></svg>Pembuatan akun</li>
+            <li><svg aria-hidden="true"><use href="#i-cek"/></svg>Satu kali pelatihan di apotek</li>
+          </ul>
+          <a class="pill garis" href="#kontak">Minta demo dulu <svg aria-hidden="true"><use href="#i-kanan"/></svg></a>
+        </li>
+        <li class="unggul">
+          <span class="lencana">Bulan pertama gratis</span>
+          <div class="judul"><h3>Langganan</h3><p>Pakai penuh selama sebulan sebelum memutuskan lanjut.</p></div>
+          <p class="rp"><b>Rp150.000</b><span>per bulan, mulai bulan kedua</span></p>
+          <ul class="cek">
+            <li><svg aria-hidden="true"><use href="#i-cek"/></svg>Server dan backup data harian</li>
+            <li><svg aria-hidden="true"><use href="#i-cek"/></svg>Perbaikan kalau ada yang rusak</li>
+            <li><svg aria-hidden="true"><use href="#i-cek"/></svg>Bantuan lewat WhatsApp</li>
+            <li><svg aria-hidden="true"><use href="#i-cek"/></svg>Tanpa kontrak tahunan</li>
+          </ul>
+          <a class="pill" href="#kontak">Atur jadwal demo <svg aria-hidden="true"><use href="#i-kanan"/></svg></a>
+        </li>
+      </ul>
+      <div class="tambahan">
+        <div><b>Cabang atau gudang tambahan</b><span>Stok terpisah per lokasi, laporan bisa digabung.</span></div>
+        <p class="rp"><b>Rp75.000</b><span>per bulan, per lokasi</span></p>
+      </div>
+      <p class="muted catatan">Permintaan di luar daftar fitur dihitung terpisah, dan harganya disepakati sebelum dikerjakan.</p>
+    </section>
+
+    <section id="mulai" class="mulai">
+      <div class="mulai-kiri">
+        <h2>Cara mulai</h2>
+        <p>Empat tahap, dan Anda baru membayar langganan kalau sebulan pertama terasa cocok.</p>
+        <a class="pill" href="#kontak">Minta demo dulu</a>
+      </div>
+      <ol class="langkah">
+        <li><div><b>Demo 30 menit di apotek Anda</b><span>Saya datang, Anda coba sendiri dengan beberapa obat dari rak.</span></div></li>
+        <li><div><b>Pasang dan input data awal</b><span>Daftar obat, batch, dan stok saat ini dimasukkan. Biaya pasang dibayar di tahap ini.</span></div></li>
+        <li><div><b>Sebulan dipakai gratis</b><span>Kalau ada yang tidak cocok dengan cara kerja apotek, disesuaikan di bulan ini.</span></div></li>
+        <li><div><b>Lanjut atau berhenti</b><span>Kalau lanjut, langganan mulai bulan kedua. Kalau berhenti, seluruh data Anda dikembalikan dalam file Excel.</span></div></li>
+      </ol>
+    </section>
+
+    <section id="belum" class="inset">
+      <h2>Yang belum ada</h2>
+      <p class="muted" style="max-width: 34rem;">Supaya jelas dari awal. Kalau salah satu dari ini yang paling Anda butuhkan, RakObat belum cocok.</p>
+      <ul class="belum">
+        <li><b>Kasir dan struk</b>Obat keluar dicatat per transaksi, belum ada layar kasir.</li>
+        <li><b>SATUSEHAT dan BPJS</b>Belum terhubung ke keduanya.</li>
+        <li><b>Pembukuan</b>Yang ada hanya nilai persediaan, bukan akuntansi lengkap.</li>
+      </ul>
+    </section>
+
+    <section id="kontak" class="kontak">
+      <div class="kontak-kiri">
+        <h2>Minta demo</h2>
+        <p>Kirim nama apotek dan alamatnya lewat WhatsApp. Saya balas untuk atur jadwal datang.</p>
+        <p>Dibuat dan dirawat oleh Kevin Dwi Wijaya, developer di Kediri. Lulusan D3 Manajemen Informatika Polinema, bersertifikat BNSP bidang pemrograman. Portofolio: <a href="https://kvndwi.com" target="_blank" rel="noopener">kvndwi.com</a></p>
+      </div>
+      <div class="wa">
+        <div>
+          <span>WhatsApp</span>
+          <strong>[ISI NOMOR WHATSAPP]</strong>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>RakObat, sistem stok untuk apotek. Kediri, Jawa Timur. Foto dari Pexels.</footer>
+</div>
+</div>
+</body>
+</html>
